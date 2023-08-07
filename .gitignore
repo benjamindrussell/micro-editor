@@ -1,0 +1,4 @@
+#ignore all text files
+*.txt
+*.o
+micro
