@@ -1,3 +1,10 @@
+/*
+ * Author: Ben Russell
+ * Date: 8/7/2023
+ * Purpose: Modify this (https://github.com/snaptoken/kilo-tutorial) text 
+ * editor to use the ncurses library and add new features to it
+ */
+
 #include "micro.h"
 
 int main(int argc, char *argv[]){
@@ -16,8 +23,6 @@ int main(int argc, char *argv[]){
 	init_pair(HL_KEYWORD1, COLOR_YELLOW, COLOR_BLACK);
 	init_pair(HL_KEYWORD2, COLOR_GREEN, COLOR_BLACK);
 	init_pair(HL_SYMBOL, COLOR_BLACK, COLOR_WHITE);
-
-	// WINDOW *statusWin = newwin(1, COLS, LINES - 1, 0);
 
 	initEditor();
 	if(argc >= 2){
