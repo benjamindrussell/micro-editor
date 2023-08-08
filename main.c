@@ -13,6 +13,7 @@ int main(int argc, char *argv[]){
 	noecho();
 	start_color();
 	keypad(stdscr, true);
+	set_escdelay(0);
 
 	init_pair(HL_NORMAL, COLOR_WHITE, COLOR_BLACK);
 	init_pair(HL_NUMBER, COLOR_RED, COLOR_BLACK);
@@ -23,6 +24,9 @@ int main(int argc, char *argv[]){
 	init_pair(HL_KEYWORD1, COLOR_YELLOW, COLOR_BLACK);
 	init_pair(HL_KEYWORD2, COLOR_GREEN, COLOR_BLACK);
 	init_pair(HL_SYMBOL, COLOR_BLACK, COLOR_WHITE);
+
+	init_pair(MODE_NORMAL, COLOR_BLACK, COLOR_BLUE);
+	init_pair(MODE_INSERT, COLOR_BLACK, COLOR_GREEN);
 
 	initEditor();
 	if(argc >= 2){

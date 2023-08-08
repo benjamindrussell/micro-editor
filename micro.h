@@ -23,6 +23,12 @@
 
 #define COLOR_BKGD 8
 
+enum editorMode {
+	MODE_NORMAL = 100,
+	MODE_INSERT,
+	MODE_COMMAND
+};
+
 enum editorHighlight {
 	HL_NORMAL = 0,
 	HL_COMMENT,
@@ -64,6 +70,7 @@ struct editorConfig {
 	int rowOffset;
 	int colOffset;
 	int numRows;
+	int mode;
 	char *fileName;
 	char statusMessage[80];
 	time_t statusMesageTime;

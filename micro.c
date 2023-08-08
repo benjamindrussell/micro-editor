@@ -592,7 +592,34 @@ char *editorPrompt(char *prompt,  void(*callback)(char *, int)){
 void editorMoveCursor(int key){
 	erow *row = (globalState.cursorY >= globalState.numRows) ? NULL : &globalState.row[globalState.cursorY];
 
-	switch(key){
+	if(key == KEY_LEFT || key == 'h'){
+		if(globalState.cursorX != 0){
+			globalState.cursorX--;
+		} else if(globalState.cursorY > 0){
+			globalState.cursorY--;
+			globalState.cursorX = globalState.row[globalState.cursorY].size;
+		}
+	} else if(key == KEY_RIGHT || key == 'l'){
+		if(row && globalState.cursorX < row->size){
+			globalState.cursorX++;
+		} else if (row && globalState.cursorX == row->size){
+			globalState.cursorY++;
+			globalState.cursorX = 0;
+		}
+	} else if(key == KEY_UP || key == 'k'){
+		if(globalState.cursorY != 0){
+			globalState.cursorY--;
+		}
+
+	} else if(key == KEY_DOWN || key == 'j'){
+		if(globalState.cursorY < globalState.numRows){
+			globalState.cursorY++;
+		}
+	}
+
+
+
+	/* switch(key){
 		case KEY_LEFT:
 			if(globalState.cursorX != 0){
 				globalState.cursorX--;
@@ -619,7 +646,7 @@ void editorMoveCursor(int key){
 				globalState.cursorY++;
 			}
 			break;
-	}
+	} */
 
 	row = (globalState.cursorY >= globalState.numRows) ? NULL : &globalState.row[globalState.cursorY];
 	int rowLen = row ? row->size : 0;
@@ -632,7 +659,97 @@ int editorProcessKeypress(){
 	static int quitTimes = QUIT_TIMES;
 
 	int c = getch();
-	switch(c){
+
+	if(globalState.mode == MODE_NORMAL){
+		switch(c){
+			case 'i':
+				globalState.mode = MODE_INSERT;
+				editorDrawStatusBar();
+				break;
+
+			case CTRL_KEY('x'):
+				if(globalState.dirty && quitTimes > 0){
+					editorSetStatusMessage("WARNING!!! File has unsaved changes."
+							"Press Ctrl-x %d more times to quit.", quitTimes);
+					quitTimes--;
+					return 1;
+				}
+				endwin();
+				exit(0);
+				break;
+
+			case CTRL_KEY('w'):
+				editorSave();
+				break;
+
+			case CTRL_KEY('f'):
+				editorFind();
+				return 1;
+				break;
+
+			case KEY_PPAGE:
+			case KEY_NPAGE:
+				{
+					if(c == KEY_PPAGE){
+						globalState.cursorY = globalState.rowOffset;
+					} else if(c == KEY_NPAGE){
+						globalState.cursorY = globalState.rowOffset + NEW_LINES - 1;
+						if(globalState.cursorY > globalState.numRows){
+							globalState.cursorY = globalState.numRows;	
+						}
+					}
+					int times = NEW_LINES;
+					while(times--){
+						editorMoveCursor(c == KEY_PPAGE ? KEY_UP : KEY_DOWN);
+					}
+				}
+				break;
+
+			case KEY_UP:
+			case 'k':
+			case KEY_DOWN:
+			case 'j':
+			case KEY_LEFT:
+			case 'h':
+			case KEY_RIGHT:
+			case 'l':
+				editorMoveCursor(c);
+				break;
+
+			default:
+				;
+		}
+	} else if(globalState.mode == MODE_INSERT){
+		switch(c){
+			case 27:
+				globalState.mode = MODE_NORMAL;	
+				editorDrawStatusBar();
+				break;
+
+			case '\n':
+				editorInsertNewline();
+				return 1;
+				break;
+
+			case KEY_BACKSPACE:
+			case CTRL_KEY('h'):
+			case KEY_DC:
+				if(c == KEY_DC){
+					editorMoveCursor(KEY_RIGHT);	
+				}
+				editorDelChar();
+				return 1;
+				break;
+
+			default:
+				editorInsertChar(c);
+				return 1;
+				break;
+		}
+
+	}
+
+	/*switch(c){
 		case '\n':
 			editorInsertNewline();
 			return 1;
@@ -712,10 +829,10 @@ int editorProcessKeypress(){
 			editorInsertChar(c);
 			return 1;
 			break;
-	}
+	} */
 	quitTimes = QUIT_TIMES;
 	return 0;
-}
+} 
 
 //output
 
@@ -780,10 +897,6 @@ void editorDrawRows(){
 		}
 	}
 
-	mvprintw(NEW_LINES - 5, COLS - 6, "%d", globalState.rowOffset);
-	mvprintw(NEW_LINES - 4, COLS - 6, "%d", globalState.numRows);
-	mvprintw(NEW_LINES - 3, COLS - 6, "%d", globalState.cursorY);
-
 	curs_set(1);
 }
 
@@ -801,7 +914,27 @@ void editorDrawStatusBar(){
 		mvprintw(NEW_LINES, i, " ");
 	}
 
-	mvprintw(NEW_LINES, 0, "%.20s - %d lines %s", 
+	char *modeMessage = NULL;
+
+	if(globalState.mode == MODE_NORMAL){
+		modeMessage = " NORMAL ";
+	} else if(globalState.mode == MODE_INSERT){
+		modeMessage = " INSERT ";
+	}
+
+	int messageLen = strlen(modeMessage);
+
+	attroff(A_REVERSE);
+	attron(COLOR_PAIR(globalState.mode));
+
+	mvprintw(NEW_LINES, 0, "%s", modeMessage);
+
+	modeMessage = NULL;
+
+	attroff(COLOR_PAIR(globalState.mode));
+	attron(A_REVERSE);
+
+	mvprintw(NEW_LINES, messageLen, " %.20s - %d lines %s", 
 			globalState.fileName ? globalState.fileName : "[No Name]", 
 			globalState.numRows,
 			globalState.dirty ? "(modified)" : "");
@@ -814,12 +947,16 @@ void editorDrawStatusBar(){
 
 	ftLen = strlen(fileTypeString);
 
+	attroff(A_REVERSE);
+	attron(COLOR_PAIR(globalState.mode));
 	mvprintw(NEW_LINES, COLS - (numDigitsRows + 1), "/%d", globalState.numRows);
 
-	mvprintw(NEW_LINES, COLS - (numDigitsRows + numDigitsCursor + 1), "%d", globalState.cursorY + 1);
+	mvprintw(NEW_LINES, COLS - (numDigitsRows + numDigitsCursor + 2), " %d", globalState.cursorY + 1);
+	attroff(COLOR_PAIR(globalState.mode));
+	attron(A_REVERSE);
 
-	mvprintw(NEW_LINES, COLS - (numDigitsRows + numDigitsCursor + ftLen + 4),
-			 "%s | ", fileTypeString);
+	mvprintw(NEW_LINES, COLS - (numDigitsRows + numDigitsCursor + ftLen + 3),
+			 "%s ", fileTypeString);
 
 
 	//attroff(COLOR_PAIR(1));
@@ -888,6 +1025,7 @@ void initEditor(){
 	globalState.rowOffset = 0;
 	globalState.colOffset = 0;
 	globalState.numRows = 0;
+	globalState.mode = MODE_NORMAL;
 	globalState.row = NULL;
 	globalState.dirty = 0;
 	globalState.fileName = NULL;
