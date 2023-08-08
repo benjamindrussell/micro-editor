@@ -7,10 +7,10 @@ I then went back through and refactored it to use the NCURSES library. I will be
 <ul>
     <li>
         <ul>
-            <li>'h' | left</li>
-            <li>'j' | down</li>
-            <li>'k' | up</li>
-            <li>'l' | right</li>
+            <b><li>h - left</li>
+            <li>j - down</li>
+            <li>k - up</li>
+            <li>l - right</li></b>
         </ul>
     </li>
     <li>Arrow Keys</li>
@@ -22,8 +22,8 @@ I then went back through and refactored it to use the NCURSES library. I will be
 
 <ul>
     <span><b>While in normal mode</b></span>
-    <li>CRTL-X | Quit</li>
-    <li>CTRL-W | Write to disk</li>
-    <li>CTRL-F | find word in file</li>
+    <li>CRTL-X - Quit</li>
+    <li>CTRL-W - Write to disk</li>
+    <li>CTRL-F - find word in file</li>
 </ul>
 
