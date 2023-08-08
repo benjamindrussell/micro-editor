@@ -13,6 +13,7 @@ I then went back through and refactored it to use the NCURSES library. I will be
             <li>l - right</li></b>
         </ul>
     </li>
+    <li>i - insert mode</li>
     <li>Arrow Keys</li>
     <li>Home / End</li>
     <li>PgUp / PgDn</li>
