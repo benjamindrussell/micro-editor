@@ -16,12 +16,9 @@
 #define MICRO_VERSION "0.0.2"
 #define WELCOME_MESSAGE "Micro editor -- version"
 #define TAB_STOP 8
-#define QUIT_TIMES 3
 
 #define CTRL_KEY(x) ((x) & 0x1f)
 #define NEW_LINES (LINES - 2)
-
-#define COLOR_BKGD 8
 
 enum editorMode {
 	MODE_NORMAL = 100,
@@ -104,6 +101,7 @@ void editorDelChar();
 void editorSave();
 char *editorRowsToString(int *buflen);
 void editorOpen(char *fileName);
+void editorClose();
 
 //find
 void editorFindCallback(char *query, int key);

@@ -29,8 +29,6 @@ struct editorSyntax HLDB[] = {
 extern struct editorConfig globalState;
 struct editorConfig globalState;
 
-static int quitTimes = QUIT_TIMES;
-
 // syntax highlighting
 
 int isSeparator(int c){
@@ -466,6 +464,7 @@ void editorOpen(char *fileName){
 	fclose(fp);
 	globalState.dirty = 0;
 }
+
 // find
 void editorFindCallback(char *query, int key){
 	static int lastMatch = -1;
@@ -555,9 +554,10 @@ int commandMode(){
 	globalState.mode = MODE_COMMAND;
 	editorRefreshScreen();
 
-	int tempY, tempX;
-	tempY = globalState.cursorY;
-	tempX = globalState.cursorX;
+	int tempY = globalState.cursorY;
+	int tempX = globalState.cursorX;
+	int tempRowOff = globalState.rowOffset;
+	int tempColOff = globalState.colOffset;
 	// char command[50]; 
 	// char garbage[8];
 
@@ -593,23 +593,42 @@ int commandMode(){
 		if(!strcmp(command, "q")){
 			if(globalState.dirty){
 				editorSetStatusMessage("File has unsaved changes, to force quit do :q!");
-				globalState.mode = MODE_NORMAL;
-				return 1;
+			} else {
+				endwin();
+				exit(0);
 			}
-			endwin();
-			exit(0);
 		} else if(!strcmp(command, "q!")){
 			endwin();
 			exit(0);
 		} else if(!strcmp(command, "w")){
+			noecho();
 			editorSave();
 		} else if(!strcmp(command, "wq")){
+			noecho();
 			editorSave();
 			endwin();
 			exit(0);
 		} else if(!strcmp(command, "f")){
 			editorFind();
 			return 1;
+		} else if(!strncmp(command, "e", 1)){
+			if(globalState.dirty){
+				editorSetStatusMessage("File has unsaved changes");
+			} else {
+				char *afterSpace = strchr(command, ' ');	
+
+				initEditor();
+
+				if(afterSpace){
+					editorOpen(afterSpace + 1);
+				}
+
+				editorSetStatusMessage("HELP: :w = save | :q = quit | :q! = force quit | :wq = write-quit | :f = find");
+
+				editorDrawRows();
+				editorRefreshScreen();
+				noecho();
+			}
 		}
 	}
 
@@ -618,6 +637,8 @@ int commandMode(){
 	globalState.mode = MODE_NORMAL;
 	globalState.cursorY = tempY;
 	globalState.cursorX = tempX;
+	globalState.rowOffset = tempRowOff;
+	globalState.colOffset = tempColOff;
 
 	return 0;
 }
@@ -915,7 +936,6 @@ int editorProcessKeypress(){
 			break;
 	} */
 
-	quitTimes = QUIT_TIMES;
 	return 0;
 } 
 
