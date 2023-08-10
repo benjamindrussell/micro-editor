@@ -558,7 +558,7 @@ int commandMode(){
 	int tempY, tempX;
 	tempY = globalState.cursorY;
 	tempX = globalState.cursorX;
-	char command[50]; 
+	// char command[50]; 
 	// char garbage[8];
 
 	// getyx(stdscr, tempY, tempX);
@@ -569,16 +569,36 @@ int commandMode(){
 	printw(":");
 	echo();
 
-	scanw("%s", command);
+	//scanw("%s", command);
+	
+	int c;
+	char *command = malloc(50 * sizeof(char));
 
-	if(!strcmp(command, "q")){
-		endwin();
-		exit(0);
-	} else if(!strcmp(command, "w")){
-		editorSave();
-	} else if(!strcmp(command, "f")){
-		editorFind();
-		return 1;
+	int count = 0;	
+	while((c = getch())){
+		if(c == 27){
+			free(command);
+			command = NULL;
+			break;
+		} else if(c == '\n'){
+			*(command + count) = '\0';
+			break;
+		}
+
+		*(command + count) = c;
+		count++;
+	}
+	
+	if(command){
+		if(!strcmp(command, "q")){
+			endwin();
+			exit(0);
+		} else if(!strcmp(command, "w")){
+			editorSave();
+		} else if(!strcmp(command, "f")){
+			editorFind();
+			return 1;
+		}
 	}
 
 	noecho();
