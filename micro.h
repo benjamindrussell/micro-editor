@@ -1,6 +1,7 @@
 #ifndef MICRO_H_INCLUDED
 #define MICRO_H_INCLUDED
 
+// includes
 #include<ncurses.h>
 #include<stdlib.h>
 #include<stdio.h>
@@ -13,6 +14,7 @@
 #include<errno.h>
 #include<ctype.h>
 
+//constants
 #define MICRO_VERSION "0.0.2"
 #define WELCOME_MESSAGE "Micro editor -- version"
 #define TAB_STOP 8
@@ -41,6 +43,7 @@ enum editorHighlight {
 #define HL_HIGHLIGHT_NUMBERS (1<<0)
 #define HL_HIGHLIGHT_STRINGS (1<<1)
 
+//data
 struct editorSyntax {
 	char *fileType;
 	char **filematch;
@@ -101,7 +104,6 @@ void editorDelChar();
 void editorSave();
 char *editorRowsToString(int *buflen);
 void editorOpen(char *fileName);
-void editorClose();
 
 //find
 void editorFindCallback(char *query, int key);
@@ -125,7 +127,6 @@ void editorSetStatusMessage(const char *fmt, ...);
 
 //init
 void initEditor();
-
 
 #endif
 

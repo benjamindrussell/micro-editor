@@ -15,6 +15,7 @@ int main(int argc, char *argv[]){
 	keypad(stdscr, true);
 	set_escdelay(0);
 
+	//color pairs
 	init_pair(HL_NORMAL, COLOR_WHITE, COLOR_BLACK);
 	init_pair(HL_NUMBER, COLOR_RED, COLOR_BLACK);
 	init_pair(HL_MATCH, COLOR_BLACK, COLOR_BLUE);
