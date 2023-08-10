@@ -591,10 +591,22 @@ int commandMode(){
 	
 	if(command){
 		if(!strcmp(command, "q")){
+			if(globalState.dirty){
+				editorSetStatusMessage("File has unsaved changes, to force quit do :q!");
+				globalState.mode = MODE_NORMAL;
+				return 1;
+			}
+			endwin();
+			exit(0);
+		} else if(!strcmp(command, "q!")){
 			endwin();
 			exit(0);
 		} else if(!strcmp(command, "w")){
 			editorSave();
+		} else if(!strcmp(command, "wq")){
+			editorSave();
+			endwin();
+			exit(0);
 		} else if(!strcmp(command, "f")){
 			editorFind();
 			return 1;
