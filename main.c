@@ -27,6 +27,7 @@ int main(int argc, char *argv[]){
 
 	init_pair(MODE_NORMAL, COLOR_BLACK, COLOR_BLUE);
 	init_pair(MODE_INSERT, COLOR_BLACK, COLOR_GREEN);
+	init_pair(MODE_COMMAND, COLOR_BLACK, COLOR_RED);
 
 	initEditor();
 	if(argc >= 2){

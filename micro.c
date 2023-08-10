@@ -484,6 +484,9 @@ void editorFindCallback(char *query, int key){
 	if(key == '\n' || key == 27){
 		lastMatch = -1;
 		direction = 1;
+
+		noecho();
+		globalState.mode = MODE_NORMAL;
 		return;
 	} else if(key == KEY_RIGHT || key == KEY_DOWN){
 		direction = 1;
@@ -543,21 +546,22 @@ void editorFind(){
 		globalState.cursorY = savedCy;
 		globalState.colOffset = savedColOff;
 		globalState.rowOffset = savedRowOff;
-	}
+			}
 }
 
 //command routines
 int commandMode(){
 	editorSetStatusMessage("");
+	globalState.mode = MODE_COMMAND;
 	editorRefreshScreen();
 
-	globalState.mode = MODE_COMMAND;
-
 	int tempY, tempX;
+	tempY = globalState.cursorY;
+	tempX = globalState.cursorX;
 	char command[50]; 
 	// char garbage[8];
 
-	getyx(stdscr, tempY, tempX);
+	// getyx(stdscr, tempY, tempX);
 
 	curs_set(0);
 	move(LINES - 1, 0);
@@ -580,7 +584,8 @@ int commandMode(){
 	noecho();
 
 	globalState.mode = MODE_NORMAL;
-	move(tempY, tempX);
+	globalState.cursorY = tempY;
+	globalState.cursorX = tempX;
 
 	return 0;
 }
@@ -968,6 +973,10 @@ void editorDrawStatusBar(){
 		modeMessage = " NORMAL ";
 	} else if(globalState.mode == MODE_INSERT){
 		modeMessage = " INSERT ";
+	} else if(globalState.mode == MODE_COMMAND){
+		modeMessage = " COMMAND ";
+	} else {
+		modeMessage = " ERROR ";
 	}
 
 	int messageLen = strlen(modeMessage);
@@ -1041,8 +1050,14 @@ void editorDrawMessageBar(){
 }
 
 void editorRefreshScreen(){
+	int tempY, tempX;
+	tempY = globalState.cursorY;
+	tempX = globalState.cursorX;
+
 	editorDrawStatusBar();
+
 	editorDrawMessageBar();
+
 	move(globalState.cursorY - globalState.rowOffset, globalState.renderX - globalState.colOffset);
 	refresh();
 }
