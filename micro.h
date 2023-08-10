@@ -79,8 +79,6 @@ struct editorConfig {
 	struct editorSyntax *syntax;
 };
 
-//file types
-
 // syntax highlighting
 int isSeparator(int c);
 void editorUpdateSyntax(erow *row);
@@ -108,7 +106,11 @@ char *editorRowsToString(int *buflen);
 void editorOpen(char *fileName);
 
 //find
+void editorFindCallback(char *query, int key);
 void editorFind();
+
+//command routines
+int commandMode();
 
 //input
 char *editorPrompt(char *prompt, void(*callback)(char *, int));

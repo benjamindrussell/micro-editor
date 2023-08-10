@@ -3,6 +3,7 @@
  * multi
  * line
  * comment
+ * test
  */
 char *C_HL_EXTENSIONS[] = { ".c", ".h", ".cpp", NULL };
 char *C_HL_KEYWORDS[] = {
@@ -27,6 +28,8 @@ struct editorSyntax HLDB[] = {
 
 extern struct editorConfig globalState;
 struct editorConfig globalState;
+
+static int quitTimes = QUIT_TIMES;
 
 // syntax highlighting
 
@@ -543,6 +546,45 @@ void editorFind(){
 	}
 }
 
+//command routines
+int commandMode(){
+	editorSetStatusMessage("");
+	editorRefreshScreen();
+
+	globalState.mode = MODE_COMMAND;
+
+	int tempY, tempX;
+	char command[50]; 
+	// char garbage[8];
+
+	getyx(stdscr, tempY, tempX);
+
+	curs_set(0);
+	move(LINES - 1, 0);
+	curs_set(1);
+	printw(":");
+	echo();
+
+	scanw("%s", command);
+
+	if(!strcmp(command, "q")){
+		endwin();
+		exit(0);
+	} else if(!strcmp(command, "w")){
+		editorSave();
+	} else if(!strcmp(command, "f")){
+		editorFind();
+		return 1;
+	}
+
+	noecho();
+
+	globalState.mode = MODE_NORMAL;
+	move(tempY, tempX);
+
+	return 0;
+}
+
 //input
 char *editorPrompt(char *prompt,  void(*callback)(char *, int)){
 	size_t bufSize = 128;
@@ -560,7 +602,7 @@ char *editorPrompt(char *prompt,  void(*callback)(char *, int)){
 			if(bufLen != 0){
 				buf[--bufLen] = '\0';
 			}
-		} else if(c == 27 ){
+		} else if(c == 27){
 			editorSetStatusMessage("");
 			if(callback){
 				callback(buf, c);
@@ -656,18 +698,21 @@ void editorMoveCursor(int key){
 }
 
 int editorProcessKeypress(){
-	static int quitTimes = QUIT_TIMES;
 
 	int c = getch();
 
 	if(globalState.mode == MODE_NORMAL){
 		switch(c){
+			case ':':
+				return commandMode();
+				break;
+
 			case 'i':
 				globalState.mode = MODE_INSERT;
 				editorDrawStatusBar();
 				break;
 
-			case CTRL_KEY('x'):
+			 /* case CTRL_KEY('x'):
 				if(globalState.dirty && quitTimes > 0){
 					editorSetStatusMessage("WARNING!!! File has unsaved changes."
 							"Press Ctrl-x %d more times to quit.", quitTimes);
@@ -677,7 +722,7 @@ int editorProcessKeypress(){
 				endwin();
 				exit(0);
 				break;
-
+			
 			case CTRL_KEY('w'):
 				editorSave();
 				break;
@@ -685,7 +730,7 @@ int editorProcessKeypress(){
 			case CTRL_KEY('f'):
 				editorFind();
 				return 1;
-				break;
+				break; */
 
 			case KEY_PPAGE:
 			case KEY_NPAGE:
@@ -719,6 +764,7 @@ int editorProcessKeypress(){
 			default:
 				;
 		}
+
 	} else if(globalState.mode == MODE_INSERT){
 		switch(c){
 			case 27:
@@ -745,8 +791,9 @@ int editorProcessKeypress(){
 				editorInsertChar(c);
 				return 1;
 				break;
-		}
+		} 
 
+	} else if(globalState.mode == MODE_COMMAND){
 	}
 
 	/*switch(c){
@@ -830,6 +877,7 @@ int editorProcessKeypress(){
 			return 1;
 			break;
 	} */
+
 	quitTimes = QUIT_TIMES;
 	return 0;
 } 
