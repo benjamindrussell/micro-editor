@@ -1,10 +1,6 @@
 #include "micro.h"
-/*
- * multi
- * line
- * comment
- * test
- */
+
+//syntax highlighting data
 char *C_HL_EXTENSIONS[] = { ".c", ".h", ".cpp", NULL };
 char *C_HL_KEYWORDS[] = {
   "switch", "if", "while", "for", "break", "continue", "return", "else",
@@ -25,14 +21,11 @@ struct editorSyntax HLDB[] = {
 
 #define HLDB_ENTRIES (sizeof(HLDB) / sizeof(HLDB[0]))
 
-
+//initialize global data
 extern struct editorConfig globalState;
 struct editorConfig globalState;
 
-static int quitTimes = QUIT_TIMES;
-
 // syntax highlighting
-
 int isSeparator(int c){
 	return isspace(c) || c == '\0' || strchr(",.()+-/*=~%<>[];", c) != NULL;
 }
@@ -466,6 +459,7 @@ void editorOpen(char *fileName){
 	fclose(fp);
 	globalState.dirty = 0;
 }
+
 // find
 void editorFindCallback(char *query, int key){
 	static int lastMatch = -1;
@@ -500,6 +494,7 @@ void editorFindCallback(char *query, int key){
 	if(lastMatch == -1){
 		direction = 1;
 	}
+
 	int current = lastMatch;
 	for(int i = 0; i < globalState.numRows; i++){
 		current += direction;
@@ -525,7 +520,6 @@ void editorFindCallback(char *query, int key){
 			editorScroll();
 			editorDrawRows();
 			editorRefreshScreen();
-			//globalState.rowOffset = globalState.numRows;
 			break;
 		}
 	}
@@ -546,7 +540,7 @@ void editorFind(){
 		globalState.cursorY = savedCy;
 		globalState.colOffset = savedColOff;
 		globalState.rowOffset = savedRowOff;
-			}
+	}
 }
 
 //command routines
@@ -555,13 +549,10 @@ int commandMode(){
 	globalState.mode = MODE_COMMAND;
 	editorRefreshScreen();
 
-	int tempY, tempX;
-	tempY = globalState.cursorY;
-	tempX = globalState.cursorX;
-	// char command[50]; 
-	// char garbage[8];
-
-	// getyx(stdscr, tempY, tempX);
+	int tempY = globalState.cursorY;
+	int tempX = globalState.cursorX;
+	int tempRowOff = globalState.rowOffset;
+	int tempColOff = globalState.colOffset;
 
 	curs_set(0);
 	move(LINES - 1, 0);
@@ -569,8 +560,6 @@ int commandMode(){
 	printw(":");
 	echo();
 
-	//scanw("%s", command);
-	
 	int c;
 	char *command = malloc(50 * sizeof(char));
 
@@ -591,13 +580,44 @@ int commandMode(){
 	
 	if(command){
 		if(!strcmp(command, "q")){
+			if(globalState.dirty){
+				editorSetStatusMessage("File has unsaved changes, to force quit do :q!");
+			} else {
+				endwin();
+				exit(0);
+			}
+		} else if(!strcmp(command, "q!")){
 			endwin();
 			exit(0);
 		} else if(!strcmp(command, "w")){
+			noecho();
 			editorSave();
+		} else if(!strcmp(command, "wq")){
+			noecho();
+			editorSave();
+			endwin();
+			exit(0);
 		} else if(!strcmp(command, "f")){
 			editorFind();
 			return 1;
+		} else if(!strncmp(command, "e", 1)){
+			if(globalState.dirty){
+				editorSetStatusMessage("File has unsaved changes");
+			} else {
+				char *afterSpace = strchr(command, ' ');	
+
+				initEditor();
+
+				if(afterSpace){
+					editorOpen(afterSpace + 1);
+				}
+
+				editorSetStatusMessage("HELP: :w = save | :q = quit | :q! = force quit | :wq = write-quit | :f = find");
+
+				editorDrawRows();
+				editorRefreshScreen();
+				noecho();
+			}
 		}
 	}
 
@@ -606,6 +626,8 @@ int commandMode(){
 	globalState.mode = MODE_NORMAL;
 	globalState.cursorY = tempY;
 	globalState.cursorX = tempX;
+	globalState.rowOffset = tempRowOff;
+	globalState.colOffset = tempColOff;
 
 	return 0;
 }
@@ -684,37 +706,6 @@ void editorMoveCursor(int key){
 		}
 	}
 
-
-
-	/* switch(key){
-		case KEY_LEFT:
-			if(globalState.cursorX != 0){
-				globalState.cursorX--;
-			} else if(globalState.cursorY > 0){
-				globalState.cursorY--;
-				globalState.cursorX = globalState.row[globalState.cursorY].size;
-			}
-			break;
-		case KEY_RIGHT:
-			if(row && globalState.cursorX < row->size){
-				globalState.cursorX++;
-			} else if (row && globalState.cursorX == row->size){
-				globalState.cursorY++;
-				globalState.cursorX = 0;
-			}
-			break;
-		case KEY_UP:
-			if(globalState.cursorY != 0){
-				globalState.cursorY--;
-			}
-			break;
-		case KEY_DOWN:
-			if(globalState.cursorY < globalState.numRows){
-				globalState.cursorY++;
-			}
-			break;
-	} */
-
 	row = (globalState.cursorY >= globalState.numRows) ? NULL : &globalState.row[globalState.cursorY];
 	int rowLen = row ? row->size : 0;
 	if(globalState.cursorX > rowLen){
@@ -736,26 +727,6 @@ int editorProcessKeypress(){
 				globalState.mode = MODE_INSERT;
 				editorDrawStatusBar();
 				break;
-
-			 /* case CTRL_KEY('x'):
-				if(globalState.dirty && quitTimes > 0){
-					editorSetStatusMessage("WARNING!!! File has unsaved changes."
-							"Press Ctrl-x %d more times to quit.", quitTimes);
-					quitTimes--;
-					return 1;
-				}
-				endwin();
-				exit(0);
-				break;
-			
-			case CTRL_KEY('w'):
-				editorSave();
-				break;
-
-			case CTRL_KEY('f'):
-				editorFind();
-				return 1;
-				break; */
 
 			case KEY_PPAGE:
 			case KEY_NPAGE:
@@ -818,97 +789,12 @@ int editorProcessKeypress(){
 				break;
 		} 
 
-	} else if(globalState.mode == MODE_COMMAND){
 	}
 
-	/*switch(c){
-		case '\n':
-			editorInsertNewline();
-			return 1;
-			break;
-
-		case CTRL_KEY('x'):
-			if(globalState.dirty && quitTimes > 0){
-				editorSetStatusMessage("WARNING!!! File has unsaved changes."
-						"Press Ctrl-x %d more times to quit.", quitTimes);
-				quitTimes--;
-				return 1;
-			}
-			endwin();
-			exit(0);
-			break;
-
-		case CTRL_KEY('w'):
-			editorSave();
-			break;
-
-		case KEY_HOME:
-			globalState.cursorX = 0;
-			break;
-		case KEY_END:
-			if(globalState.cursorY < globalState.numRows){
-				globalState.cursorX = globalState.row[globalState.cursorY].size;
-			}
-			break;
-
-		case CTRL_KEY('f'):
-			editorFind();
-			return 1;
-			break;
-		
-		case 27:
-			break;
-
-		case KEY_BACKSPACE:
-		case CTRL_KEY('h'):
-		case KEY_DC:
-			if(c == KEY_DC){
-				editorMoveCursor(KEY_RIGHT);	
-			}
-			editorDelChar();
-			return 1;
-			break;
-
-		case KEY_PPAGE:
-		case KEY_NPAGE:
-			{
-				if(c == KEY_PPAGE){
-					globalState.cursorY = globalState.rowOffset;
-				} else if(c == KEY_NPAGE){
-					globalState.cursorY = globalState.rowOffset + NEW_LINES - 1;
-					if(globalState.cursorY > globalState.numRows){
-						globalState.cursorY = globalState.numRows;	
-					}
-				}
-				int times = NEW_LINES;
-				while(times--){
-					editorMoveCursor(c == KEY_PPAGE ? KEY_UP : KEY_DOWN);
-				}
-			}
-			break;
-
-		case KEY_UP:
-		case KEY_DOWN:
-		case KEY_LEFT:
-		case KEY_RIGHT:
-			editorMoveCursor(c);
-			break;
-
-		case CTRL_KEY('l'):
-			break;
-
-		default:
-			editorInsertChar(c);
-			return 1;
-			break;
-	} */
-
-	quitTimes = QUIT_TIMES;
 	return 0;
 } 
 
 //output
-
 int editorScroll(){
 	globalState.renderX = 0;
 	if(globalState.cursorY < globalState.numRows){
@@ -966,7 +852,6 @@ void editorDrawRows(){
 				mvaddch(i, j, c);
 			}
 			
-			//mvprintw(i, 0, "%s", globalState.row[i + globalState.rowOffset].render + globalState.colOffset);
 		}
 	}
 
@@ -981,7 +866,6 @@ void editorDrawStatusBar(){
 	curs_set(0);
 
 	move(NEW_LINES, 0);
-	//attron(COLOR_PAIR(1));
 	attron(A_REVERSE);
 	for(int i = 0; i < COLS; i++){
 		mvprintw(NEW_LINES, i, " ");
@@ -1035,8 +919,6 @@ void editorDrawStatusBar(){
 	mvprintw(NEW_LINES, COLS - (numDigitsRows + numDigitsCursor + ftLen + 3),
 			 "%s ", fileTypeString);
 
-
-	//attroff(COLOR_PAIR(1));
 	attroff(A_REVERSE);
 
 	move(tempY, tempX);
@@ -1100,7 +982,6 @@ void editorSetStatusMessage(const char *fmt, ...){
 }
 
 //init
-
 void initEditor(){
 	globalState.cursorY = 0;
 	globalState.cursorX = 0;

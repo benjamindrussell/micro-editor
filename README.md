@@ -24,7 +24,10 @@ I then went back through and refactored it to use the NCURSES library and vim ed
 <ul>
     <span><b>While in normal mode</b></span>
     <li>:q - Quit</li>
+    <li>:q! - force quit
     <li>:w - Write to disk</li>
+    <li>:wq - write then quit</li>
     <li>:f - find word in file</li>
+    <li>:e &ltfilename&gt - edit file (closes current file)</li>
 </ul>
 

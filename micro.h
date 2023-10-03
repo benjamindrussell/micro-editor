@@ -1,6 +1,7 @@
 #ifndef MICRO_H_INCLUDED
 #define MICRO_H_INCLUDED
 
+// includes
 #include<ncurses.h>
 #include<stdlib.h>
 #include<stdio.h>
@@ -13,15 +14,13 @@
 #include<errno.h>
 #include<ctype.h>
 
+//constants
 #define MICRO_VERSION "0.0.2"
 #define WELCOME_MESSAGE "Micro editor -- version"
 #define TAB_STOP 8
-#define QUIT_TIMES 3
 
 #define CTRL_KEY(x) ((x) & 0x1f)
 #define NEW_LINES (LINES - 2)
-
-#define COLOR_BKGD 8
 
 enum editorMode {
 	MODE_NORMAL = 100,
@@ -44,6 +43,7 @@ enum editorHighlight {
 #define HL_HIGHLIGHT_NUMBERS (1<<0)
 #define HL_HIGHLIGHT_STRINGS (1<<1)
 
+//data
 struct editorSyntax {
 	char *fileType;
 	char **filematch;
@@ -127,7 +127,6 @@ void editorSetStatusMessage(const char *fmt, ...);
 
 //init
 void initEditor();
-
 
 #endif
 
