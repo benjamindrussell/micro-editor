@@ -1,7 +1,4 @@
-# Terminal Text Editor
-
-https://github.com/benjamindrussell/Terminal-Text-Editor/assets/46113261/fc6b0a0c-281e-49ee-98ed-d1661dd12fe7
-
+# Micro Editor
 
 I followed this tutorial: https://github.com/snaptoken/kilo-tutorial to make a text editor. 
 
