@@ -1,5 +1,9 @@
 # Micro Editor
 
+
+https://github.com/benjamindrussell/micro-editor/assets/46113261/7bcb2669-36f0-4ade-b54a-f28353a0e0fb
+
+
 I followed this tutorial: https://github.com/snaptoken/kilo-tutorial to make a text editor. 
 
 I then went back through and refactored it to use the NCURSES library and added features such as vim editing modes. I will be adding more features soon.
